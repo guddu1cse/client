@@ -234,7 +234,8 @@ const QuestionPage = () => {
           <h2>Error</h2>
           <p style={{ color: "red" }}>
             Server is running on free tier, so it may take some time to load
-            questions.
+            questions and some time server may go down after that it take some
+            time to wake up.
           </p>
           <button
             onClick={() => window.location.reload()}
