@@ -26,7 +26,7 @@ const QuestionPage = () => {
       try {
         setLoading(true);
         const data = await fetchQuestionsFromBackend();
-        setQuestions(data);
+        setQuestions(data.map((q, index) => ({ ...q, id: index + 1 })));
         setError(null);
       } catch (err) {
         setError("Failed to load questions. Please try again later.");
@@ -72,21 +72,25 @@ const QuestionPage = () => {
           : question
       );
     });
+    setVisited({ ...visited, [qid]: true });
   };
 
   const handleNext = () => {
     const qid = questions[currentQIndex]?.id;
     if (qid) {
       setVisited({ ...visited, [qid]: true });
-      if (!selectedAnswers[qid]) {
-        setQuestions((prevQuestions) => {
-          return prevQuestions.map((question) =>
-            question.id === qid && question.status === "NOT_ATTEMPTED"
-              ? { ...question, status: "NOT_ANSWERED" }
-              : question
-          );
+      setQuestions((prevQuestions) => {
+        return prevQuestions.map((question) => {
+          if (question.id === qid) {
+            if (selectedAnswers[qid]) {
+              return { ...question, status: "ANSWERED" };
+            } else if (question.status === "NOT_ATTEMPTED") {
+              return { ...question, status: "NOT_ANSWERED" };
+            }
+          }
+          return question;
         });
-      }
+      });
     }
     if (currentQIndex < questions.length - 1) {
       setCurrentQIndex(currentQIndex + 1);
@@ -540,20 +544,14 @@ const QuestionPage = () => {
             }}
           >
             {questions.map((q, index) => {
-              let bgColor;
               const color = getColor(q.id);
-              if (color === "blue") bgColor = "blue";
-              else if (color === "green") bgColor = "green";
-              else if (color === "yellow") bgColor = "yellow";
-              else if (color === "gray") bgColor = "gray";
-              else bgColor = "red";
 
               return (
                 <button
                   key={q.id}
                   onClick={() => handleJump(index)}
                   style={{
-                    backgroundColor: bgColor,
+                    backgroundColor: color,
                     color: "white",
                     borderTopLeftRadius: "10px",
                     padding: "6px",
